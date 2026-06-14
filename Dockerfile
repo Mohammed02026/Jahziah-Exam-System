@@ -8,7 +8,12 @@ RUN apt-get update && apt-get install -y \
     nodejs \
     npm \
     libzip-dev \
-    && docker-php-ext-install pdo pdo_sqlite zip
+    libsqlite3-dev \
+    sqlite3 \
+    && docker-php-ext-install \
+    pdo \
+    pdo_sqlite \
+    zip
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
@@ -20,14 +25,13 @@ RUN composer install --no-dev --optimize-autoloader
 
 RUN npm install && npm run build
 
-RUN chmod -R 775 storage bootstrap/cache
+RUN mkdir -p database \
+    && touch database/database.sqlite
 
-RUN touch database/database.sqlite
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
-RUN php artisan config:clear
-
-RUN a2enmod rewrite
+RUN php artisan config:clear || true
 
 EXPOSE 80
 
-CMD php artisan migrate --force && apache2-foreground
+CMD ["apache2-foreground"]
