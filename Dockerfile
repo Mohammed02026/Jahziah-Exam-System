@@ -23,14 +23,15 @@ COPY . .
 
 RUN composer install --no-dev --optimize-autoloader
 
-RUN npm install && npm run build
+RUN npm install
 
 RUN mkdir -p database \
     && touch database/database.sqlite
 
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+RUN chown -R www-data:www-data /var/www/html/storage \
+    /var/www/html/bootstrap/cache
 
-RUN php artisan config:clear || true
+RUN a2enmod rewrite
 
 EXPOSE 80
 
